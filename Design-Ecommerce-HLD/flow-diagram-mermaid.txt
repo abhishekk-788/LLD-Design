@@ -1,0 +1,56 @@
+flowchart TD
+    subgraph User_Interaction
+        A1[User Home Page] -->|LB| B1[Recommendation Service]
+        A2[User Search Page] -->|LB| B2[Search Service]
+        A3[User Purchase Flow] -->|LB| C1[Order Taking Service]
+    end
+
+    subgraph Search_Flow
+        B2 --> B3[Wishlist Service]
+        B2 -->|Elastic Search| B4[Search Consumer]
+        B2 --> C2[Cart Service]
+        C2 -->|MySQL| C3[Cart DB]
+        B3 -->|MySQL| B5[Wishlist DB]
+        C2 --> C4[Serviceability + TAT Service]
+        C4 -->|Serviceability| B1
+        B1 -->|Cassandra| DB1[Cassandra]
+    end
+
+    subgraph Item_Service
+        B6[Item Service] -->|MongoDB| DB2[Item DB]
+        B6 --> B1
+        B6 -->|Spark Streaming| P1[Spark Streaming]
+        P1 -->|Spark Cluster| P2[Spark Cluster]
+        P1 -->|Hadoop Cluster| P3[Hadoop Cluster]
+    end
+
+    subgraph Kafka_Event
+        P1 -->|Kafka| K1[KAFKA]
+        K1 --> S1[Warehouse Service]
+        K1 --> S2[Inbound Service]
+        K1 --> S3[Logistics Service]
+        K1 --> B4
+    end
+
+    subgraph Purchase_Flow
+        C1 -->|MySQL| DB3[OMS DB]
+        C1 --> C5[Payment Service]
+        C1 --> C6[Order Processing Service]
+        C6 --> C7[Historical Order Service]
+        C7 -->|Cassandra| DB1
+        C6 --> C8[Archival Service]
+        C6 -->|Kafka| K1
+        C1 --> C9[Inventory Service]
+        C9 -->|MySQL| DB4[Inventory DB]
+        C9 --> B1
+        C6 -->|Redis| DB5[Redis]
+    end
+
+    subgraph Processing
+        C9 --> P4[Spark Jobs]
+        P4 -->|Hadoop Cluster| P3
+        P4 --> P1
+        P4 --> B1
+    end
+
+    K1 -->|Notification| N1[Notification Service]
